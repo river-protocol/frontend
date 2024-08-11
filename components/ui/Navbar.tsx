@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -47,7 +47,18 @@ const routeList: RouteProps[] = [
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { createSubOrgAndWallet, login } = useTurnkeyContext()
-  const { connectWallet, balance } = useWalletContext()
+  const { connectWallet, balance, signer } = useWalletContext()
+  const [ walletAddress, setAddress ] = useState<string>("")
+  useEffect(() => {
+    const getAddress = async () => {
+      if (signer) {
+        const address = await signer.getAddress()
+        setAddress(address)
+      }
+      return ""
+    }
+    getAddress()
+  }, [signer])
   return (
     <header className="sticky border-b-[1px] top-0 z-40 w-full bg-white dark:border-b-slate-700 dark:bg-background">
       <NavigationMenu className="mx-auto">
@@ -97,41 +108,43 @@ export const Navbar = () => {
                     </a>
                   ))}
                   <Drawer>
-                    <DrawerTrigger className={`border ${buttonVariants({ variant: "secondary" })}`}>Login</DrawerTrigger>
+                    <DrawerTrigger className={`border ${buttonVariants({ variant: "secondary" })}`}>{!signer ? "Login" : "View Address"}</DrawerTrigger>
                     <DrawerContent>
                       <DrawerHeader>
-                        <DrawerTitle className="text-center text-3xl">Get Started with River Protocol</DrawerTitle>
-                        <DrawerDescription className="text-center text-xl">Choose from the following options.</DrawerDescription>
+                        <DrawerTitle className="text-center text-3xl">{!signer ? "Get Started with River Protocol" : "Use the address given below"}</DrawerTitle>
+                        <DrawerDescription className="text-center text-xl">{!signer ? "Choose from the following options." : walletAddress}</DrawerDescription>
                       </DrawerHeader>
-                      <DrawerFooter>
-                        <div className="flex flex-col gap-2 w-96 justify-center mx-auto">
-                          <button
-                            onClick={connectWallet}
-                            className={`border ${buttonVariants({ variant: "secondary" })} flex flex-1 flex-row justify-between items-center text-xl`}
-                          >
-                            <span>Use Metamask</span>
-                            <Image src={"metamask.svg"} alt="metamask" width={24} height={24} />
-                          </button>
-                          <button
-                            onClick={login}
-                            className={`border ${buttonVariants({ variant: "secondary" })} flex flex-1 flex-row justify-between items-center text-xl`}
-                          >
-                            <span>Login using Passkey</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={createSubOrgAndWallet}
-                            className={`border ${buttonVariants({ variant: "secondary" })} flex flex-1 flex-row justify-between items-center text-xl`}
-                          >
-                            <span>Create Passkey</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
-                            </svg>
-                          </button>
-                        </div>
-                      </DrawerFooter>
+                      {!signer && (
+                        <DrawerFooter>
+                          <div className="flex flex-col gap-2 w-96 justify-center mx-auto">
+                            <button
+                              onClick={connectWallet}
+                              className={`border ${buttonVariants({ variant: "secondary" })} flex flex-1 flex-row justify-between items-center text-xl`}
+                            >
+                              <span>Use Metamask</span>
+                              <Image src={"metamask.svg"} alt="metamask" width={24} height={24} />
+                            </button>
+                            <button
+                              onClick={login}
+                              className={`border ${buttonVariants({ variant: "secondary" })} flex flex-1 flex-row justify-between items-center text-xl`}
+                            >
+                              <span>Login using Passkey</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={createSubOrgAndWallet}
+                              className={`border ${buttonVariants({ variant: "secondary" })} flex flex-1 flex-row justify-between items-center text-xl`}
+                            >
+                              <span>Create Passkey</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </DrawerFooter>
+                      )}
                     </DrawerContent>
                   </Drawer>
                 </nav>
